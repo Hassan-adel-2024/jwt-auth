@@ -19,6 +19,8 @@ public class JwtService {
     private String secretKey;
     @Value("${jwt.expiration}")
     private Long expiration;
+    @Value("${jwt.refresh.expiration}")
+    private Long refreshExpiration;
 
     /*
        Method to generate token accepts UserDetails or any implementation of it
@@ -78,6 +80,14 @@ public class JwtService {
                 .build() // Build the parser
                 .parseClaimsJws(token) // Parse the token
                 .getBody(); // Return the claims
+    }
+    public String generateRefreshToken(AppUser appUser) {
+        return Jwts.builder().
+                subject(appUser.getEmail()).
+                issuedAt(new Date(System.currentTimeMillis())).
+                expiration(new Date(System.currentTimeMillis()+refreshExpiration)).
+                signWith(Keys.hmacShaKeyFor(secretKey.getBytes())).compact();
+
     }
 
     public boolean isTokenExpired(String token) {

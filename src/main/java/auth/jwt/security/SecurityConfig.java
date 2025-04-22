@@ -35,7 +35,8 @@ public class SecurityConfig {
     // List of API endpoints that don't require authentication
     private static final String [] publicApi = {
             "/api/user/save",  // User registration endpoint
-            "/api/auth/login"
+            "/api/auth/login",
+            "api/auth/refresh",
 
     };
 
