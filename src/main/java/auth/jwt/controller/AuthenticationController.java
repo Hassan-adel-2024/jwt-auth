@@ -4,7 +4,9 @@ import auth.jwt.dto.AuthRequest;
 import auth.jwt.dto.AuthResponse;
 import auth.jwt.dto.RefreshTokenDto;
 import auth.jwt.entity.AppUser;
+import auth.jwt.entity.BlackListToken;
 import auth.jwt.service.JwtService;
+import auth.jwt.service.impl.BlackListTokenService;
 import auth.jwt.service.impl.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +24,7 @@ public class AuthenticationController {
     private final AuthenticationManager authManager;
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final BlackListTokenService blackListTokenService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
@@ -57,6 +57,16 @@ public class AuthenticationController {
         catch (Exception e) {
             return ResponseEntity.status(401).body("Invalid refresh token");
         }
+
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestHeader("authorization") String tokenHeader) {
+        if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Invalid token");
+        }
+        String accessToken = tokenHeader.replace("Bearer ", "");
+        blackListTokenService.blackListAToken(accessToken);
+        return ResponseEntity.ok("Logout successful");
 
     }
 }
